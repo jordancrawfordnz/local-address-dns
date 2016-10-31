@@ -10,7 +10,7 @@ PORT = parseInt(PORT);
 
 var args = process.argv.slice(2);
 if (args.length !== 1) {
-  console.log('Run with: node server [local address client address]. e.g.: node server http://pi.example.com:3000');
+  console.log('Run with: node server [local address client URL]. e.g.: node server http://pi.example.com:3000');
   return;
 }
 var localAddressClient = args[0];
