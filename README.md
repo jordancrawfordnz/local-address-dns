@@ -14,7 +14,7 @@
 Build with ``docker build -t jordancrawford/local-address-dns .``.
 
 ### Running
-Run with ``docker run -d -p 53:53 --restart always --name local-address-dns jordancrawford/local-address-dns [local address client URL]``
+Run with ``docker run -d -p 53:53/udp --restart always --name local-address-dns jordancrawford/local-address-dns [local address client URL]``
 
 The local address client URL is the URL to fetch the local IP address from (i.e.: a local-address-dns-client instance). e.g.: If you have a VPN tunnel to access the local network device at pi.example.com and the local-address-dns-client runs on port 3000, then this would be http://pi.example.com:3000.
 
