@@ -9,16 +9,19 @@ TTL = parseInt(TTL);
 PORT = parseInt(PORT);
 
 var args = process.argv.slice(2);
-if (args.length !== 1) {
-  console.log('Run with: node server [local address client URL]. e.g.: node server http://pi.example.com:3000');
+if (args.length !== 2) {
+  console.log('Run with: node server [DNS zone] [local address client URL]. e.g.: node server local.pi.example.com http://pi.example.com:3000');
   return;
 }
-var localAddressClient = args[0];
+var zone = args[0];
+var localAddressClient = args[1];
 
-server.listen(PORT);
-console.log('Server running on port ' + PORT);
+console.log('Port: ' + PORT);
 console.log('TTL: ' + TTL);
+console.log('Zone: ' + zone);
 console.log('Local address client: ' + localAddressClient);
+
+server.zone(zone).listen(PORT);
  
 function handleDNSRequest(dnsRequest, dnsResponse) {
   console.log(
@@ -31,7 +34,7 @@ function handleDNSRequest(dnsRequest, dnsResponse) {
   var question = dnsResponse.question[0];
   var hostname = question.name;
   
-  if (question && question.type === 'A') {
+  if (question && question.name === zone && question.type === 'A') {
     // Get the IP address of the local address client.
     try {
       request(localAddressClient, function (httpError, httpResponse, body) {
