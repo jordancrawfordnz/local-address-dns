@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dnsd": "^0.9.6"
+    "dnsd": "^0.9.6",
+    "request": "^2.76.0"
   }
 }
