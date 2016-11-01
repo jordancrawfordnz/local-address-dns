@@ -1,5 +1,6 @@
 var dnsd = require('dnsd');
 var request = require('request');
+var Promise = require('promise');
  
 var server = dnsd.createServer(handleDNSRequest);
 
@@ -22,7 +23,30 @@ console.log('Zone: ' + zone);
 console.log('Local address client: ' + localAddressClient);
 
 server.zone(zone).listen(PORT);
- 
+
+var getIPAddressPromise;
+
+// Gets the IP address of the client, returning a promise that will resolve/reject with the IP address.
+function getIPAddress() {
+  return new Promise(function(resolve, reject) {
+    request(localAddressClient, function (httpError, httpResponse, body) {
+      if (!httpError && httpResponse.statusCode == 200) {
+        var ipAddress = JSON.parse(body).ip;
+        
+        // If a valid IP address was given.
+        if (ipAddress) {
+          resolve(ipAddress);
+        } else {
+          reject('No IP address in response.');
+        }
+      } else {
+        reject(httpError);
+      }
+    });
+  });
+}
+
+// Handles an incoming DNS request. 
 function handleDNSRequest(dnsRequest, dnsResponse) {
   console.log(
     '%s:%s/%s %j',
@@ -37,25 +61,29 @@ function handleDNSRequest(dnsRequest, dnsResponse) {
   if (question && question.name === zone && question.type === 'A') {
     // Get the IP address of the local address client.
     try {
-      request(localAddressClient, function (httpError, httpResponse, body) {
-        if (!httpError && httpResponse.statusCode == 200) {
-          var ipAddress = JSON.parse(body).ip;
+        if (!getIPAddressPromise) {
+          getIPAddressPromise = getIPAddress();
           
-          // If a valid IP address was given.
-          if (ipAddress) {
-            dnsResponse.answer.push({
-              name : hostname,
-              type : 'A',
-              data : ipAddress,
-              ttl  : TTL
-            });
-            dnsResponse.end();
-          }
-        } else {
-          console.log('Error with HTTP request.');
-          console.log(httpError);
+          // On error, clear the promise so the request can be re-attempted later.
+          getIPAddressPromise.catch(function() {
+            getIPAddressPromise = null;
+          });
+          
+          // Clear the promise after enough time has passed so the request is re-fetched.
+          setTimeout(function() {
+            getIPAddressPromise = null;
+          }, (TTL - 1)*1000);
         }
-      });
+
+        getIPAddressPromise.then(function(ipAddress) {
+          dnsResponse.answer.push({
+            name : hostname,
+            type : 'A',
+            data : ipAddress,
+            ttl  : TTL
+          });
+          dnsResponse.end();
+        });
     } catch (error) {
       console.log('An error occurred while processing the request.');
       console.log(error);
