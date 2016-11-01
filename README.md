@@ -11,6 +11,10 @@ You don't always know the IP address a network device will be assigned on your l
 
 local-address-dns is a DNS server. When it receives a request, it fetches the local IP address from a local-address-dns-client (avaliable for Raspberry Pi at [local-address-dns-client-rpi](https://github.com/jordancrawfordnz/local-address-dns-client-rpi/)).
 
+For more information about the inspiration and implementation, see my blog post, [Easy access to my Pi on a local network](https://jordancrawford.kiwi/local-address-dns/).
+
+![A component diagram](https://raw.githubusercontent.com/jordancrawfordnz/local-address-dns/master/component-diagram.png)
+
 ## Command Line Arguments
 
 ### DNS Zone
